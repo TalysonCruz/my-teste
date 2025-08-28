@@ -1,6 +1,5 @@
 "use client";
-import React, { useMemo, useState } from "react";
-
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -11,12 +10,12 @@ import {
   TableCell,
   TableFooter,
 } from "@/components/ui/table";
-import { Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 type Funcionario = {
   id: number;
   nome: string;
-  nascimento: string; // formato "YYYY-MM-DD"
+  nascimento: string;
   salario: number;
   funcao: string;
 };
@@ -94,10 +93,8 @@ const listFuncionarios: Funcionario[] = [
   },
 ];
 
-export default function TabelaFuncionarios() {
-  const [funcionarios, setFuncionarios] =
-    useState<Funcionario[]>(listFuncionarios);
-
+export default function Home() {
+  const [funcionarios, setFuncionarios] = useState(listFuncionarios);
   const [ordenarPor, setOrdenarPor] = useState<
     "nome" | "nascimento" | "salario" | "funcao"
   >("nome");
@@ -105,64 +102,45 @@ export default function TabelaFuncionarios() {
 
   const toggleOrdenacao = (coluna: typeof ordenarPor) => {
     if (ordenarPor === coluna) {
-      setOrdenacao((p) => (p === "asc" ? "desc" : "asc"));
+      setOrdenacao((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
       setOrdenarPor(coluna);
       setOrdenacao("asc");
     }
   };
 
-  const parseISOToDate = (iso: string) => {
-    const [y, m, d] = iso.split("-").map(Number);
-    return new Date(y, (m || 1) - 1, d || 1);
-  };
-
-  const formatarData = (iso: string) => {
-    const d = parseISOToDate(iso);
-    return d.toLocaleDateString("pt-BR");
-  };
-
-  const formatarDinheiro = (v: number) =>
-    new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(v);
-
   const funcionariosOrdenados = useMemo(() => {
     return [...funcionarios].sort((a, b) => {
       let compare = 0;
-
-      if (ordenarPor === "nome") {
-        compare = a.nome.localeCompare(b.nome);
-      } else if (ordenarPor === "funcao") {
+      if (ordenarPor === "nome") compare = a.nome.localeCompare(b.nome);
+      else if (ordenarPor === "funcao")
         compare = a.funcao.localeCompare(b.funcao);
-      } else if (ordenarPor === "nascimento") {
+      else if (ordenarPor === "nascimento")
         compare =
-          parseISOToDate(a.nascimento).getTime() -
-          parseISOToDate(b.nascimento).getTime();
-      } else if (ordenarPor === "salario") {
-        compare = a.salario - b.salario;
-      }
-
+          new Date(a.nascimento).getTime() - new Date(b.nascimento).getTime();
+      else if (ordenarPor === "salario") compare = a.salario - b.salario;
       return ordenacao === "asc" ? compare : -compare;
     });
   }, [funcionarios, ordenarPor, ordenacao]);
 
+  const formatarDinheiro = (valor: number) =>
+    new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(valor);
+
+  const formatarData = (dataStr: string) =>
+    new Date(dataStr).toLocaleDateString("pt-BR");
+
   const removerUsuario = (id: number) =>
     setFuncionarios((prev) => prev.filter((f) => f.id !== id));
-
   const aumentarSalario = () =>
     setFuncionarios((prev) =>
-      prev.map((f) => ({ ...f, salario: Number((f.salario * 1.1).toFixed(2)) }))
+      prev.map((f) => ({ ...f, salario: f.salario * 1.1 }))
     );
-
   const aumentarSalarioDeUm = (id: number) =>
     setFuncionarios((prev) =>
-      prev.map((f) =>
-        f.id === id
-          ? { ...f, salario: Number((f.salario * 1.1).toFixed(2)) }
-          : f
-      )
+      prev.map((f) => (f.id === id ? { ...f, salario: f.salario * 1.1 } : f))
     );
 
   const agrupadoPorFuncao = useMemo(() => {
@@ -174,92 +152,50 @@ export default function TabelaFuncionarios() {
   }, [funcionarios]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold">Funcionários</h2>
+    <section className="max-w-5xl mx-auto p-4 space-y-6">
+      <h1 className="text-2xl font-bold mb-4">Lista de Funcionários</h1>
+      <div className="flex gap-2 mb-4">
         <Button onClick={aumentarSalario}>Aumento Geral 10%</Button>
       </div>
 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead
-              onClick={() => toggleOrdenacao("nome")}
-              className="cursor-pointer"
-            >
-              <div className="flex items-center gap-1">
-                Nome
-                {ordenarPor === "nome" &&
-                  (ordenacao === "asc" ? (
-                    <ArrowUp size={14} />
-                  ) : (
-                    <ArrowDown size={14} />
-                  ))}
-              </div>
-            </TableHead>
-
-            <TableHead
-              onClick={() => toggleOrdenacao("nascimento")}
-              className="cursor-pointer"
-            >
-              <div className="flex items-center gap-1">
-                Data Nascimento
-                {ordenarPor === "nascimento" &&
-                  (ordenacao === "asc" ? (
-                    <ArrowUp size={14} />
-                  ) : (
-                    <ArrowDown size={14} />
-                  ))}
-              </div>
-            </TableHead>
-
-            <TableHead
-              onClick={() => toggleOrdenacao("salario")}
-              className="cursor-pointer"
-            >
-              <div className="flex items-center gap-1">
-                Salário
-                {ordenarPor === "salario" &&
-                  (ordenacao === "asc" ? (
-                    <ArrowUp size={14} />
-                  ) : (
-                    <ArrowDown size={14} />
-                  ))}
-              </div>
-            </TableHead>
-
-            <TableHead
-              onClick={() => toggleOrdenacao("funcao")}
-              className="cursor-pointer text-right"
-            >
-              <div className="flex items-center justify-end gap-1">
-                Função
-                {ordenarPor === "funcao" &&
-                  (ordenacao === "asc" ? (
-                    <ArrowUp size={14} />
-                  ) : (
-                    <ArrowDown size={14} />
-                  ))}
-              </div>
-            </TableHead>
-
+            {["nome", "nascimento", "salario", "funcao"].map((col) => (
+              <TableHead
+                key={col}
+                className={`cursor-pointer ${
+                  ordenarPor === col ? "font-bold bg-gray-100" : ""
+                }`}
+                onClick={() => toggleOrdenacao(col as typeof ordenarPor)}
+              >
+                {col === "nome"
+                  ? "Nome"
+                  : col === "nascimento"
+                  ? "Data Nascimento"
+                  : col === "salario"
+                  ? "Salário"
+                  : "Função"}
+                {ordenarPor === col && (ordenacao === "asc" ? " ↑" : " ↓")}
+              </TableHead>
+            ))}
             <TableHead>Ações</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
-          {funcionariosOrdenados.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell>{item.nome}</TableCell>
-              <TableCell>{formatarData(item.nascimento)}</TableCell>
-              <TableCell>{formatarDinheiro(item.salario)}</TableCell>
-              <TableCell className="text-right">{item.funcao}</TableCell>
+          {funcionariosOrdenados.map((f) => (
+            <TableRow key={f.id}>
+              <TableCell>{f.nome}</TableCell>
+              <TableCell>{formatarData(f.nascimento)}</TableCell>
+              <TableCell>{formatarDinheiro(f.salario)}</TableCell>
+              <TableCell>{f.funcao}</TableCell>
               <TableCell className="flex gap-2">
-                <Button onClick={() => removerUsuario(item.id)}>
+                <Button onClick={() => removerUsuario(f.id)}>
                   <Trash2 />
                 </Button>
-                <Button onClick={() => aumentarSalarioDeUm(item.id)}>
-                  +10%
+                <Button onClick={() => aumentarSalarioDeUm(f.id)}>
+                  Aumento Individual
                 </Button>
               </TableCell>
             </TableRow>
@@ -269,33 +205,29 @@ export default function TabelaFuncionarios() {
         <TableFooter>
           <TableRow>
             <TableCell colSpan={5} className="text-right">
-              Total:{" "}
-              <strong>
-                {formatarDinheiro(
-                  funcionarios.reduce((s, f) => s + f.salario, 0)
-                )}
-              </strong>
+              <Button onClick={aumentarSalario}>Aumento Geral 10%</Button>
             </TableCell>
           </TableRow>
         </TableFooter>
       </Table>
 
-      {/* agrupamento por função */}
-      <div className="space-y-4">
+      {/* Agrupamento por função */}
+      <div className="space-y-4 mt-6">
         {Object.entries(agrupadoPorFuncao).map(([funcao, lista]) => (
-          <div key={funcao} className="border p-3 rounded-lg">
-            <h3 className="font-semibold">{funcao}</h3>
-            <ul className="pl-5 list-disc">
+          <div key={funcao} className="border p-3 rounded-lg shadow">
+            <h2 className="font-bold text-lg">
+              {funcao} ({lista.length})
+            </h2>
+            <ul className="list-disc pl-6">
               {lista.map((f) => (
                 <li key={f.id}>
-                  {f.nome} — {formatarDinheiro(f.salario)} —{" "}
-                  {formatarData(f.nascimento)}
+                  {f.nome} — {formatarDinheiro(f.salario)}
                 </li>
               ))}
             </ul>
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

@@ -1,103 +1,301 @@
-import Image from "next/image";
+"use client";
+import React, { useMemo, useState } from "react";
 
-export default function Home() {
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+  TableFooter,
+} from "@/components/ui/table";
+import { Trash2, ArrowUp, ArrowDown } from "lucide-react";
+
+type Funcionario = {
+  id: number;
+  nome: string;
+  nascimento: string; // formato "YYYY-MM-DD"
+  salario: number;
+  funcao: string;
+};
+
+const listFuncionarios: Funcionario[] = [
+  {
+    id: 1,
+    nome: "Maria",
+    nascimento: "2000-10-18",
+    salario: 2009.44,
+    funcao: "Operador",
+  },
+  {
+    id: 2,
+    nome: "João",
+    nascimento: "1990-05-12",
+    salario: 2284.38,
+    funcao: "Operador",
+  },
+  {
+    id: 3,
+    nome: "Caio",
+    nascimento: "1961-05-02",
+    salario: 9636.14,
+    funcao: "Coordenador",
+  },
+  {
+    id: 4,
+    nome: "Miguel",
+    nascimento: "1988-10-14",
+    salario: 19119.88,
+    funcao: "Diretor",
+  },
+  {
+    id: 5,
+    nome: "Alice",
+    nascimento: "1995-11-05",
+    salario: 2234.68,
+    funcao: "Recepcionista",
+  },
+  {
+    id: 6,
+    nome: "Heitor",
+    nascimento: "1999-11-19",
+    salario: 1582.72,
+    funcao: "Operador",
+  },
+  {
+    id: 7,
+    nome: "Arthur",
+    nascimento: "1993-03-31",
+    salario: 4071.84,
+    funcao: "Contador",
+  },
+  {
+    id: 8,
+    nome: "Laura",
+    nascimento: "1994-07-08",
+    salario: 3017.45,
+    funcao: "Gerente",
+  },
+  {
+    id: 9,
+    nome: "Heloisa",
+    nascimento: "2003-05-24",
+    salario: 1606.85,
+    funcao: "Eletricista",
+  },
+  {
+    id: 10,
+    nome: "Helena",
+    nascimento: "1996-09-02",
+    salario: 2799.93,
+    funcao: "Gerente",
+  },
+];
+
+export default function TabelaFuncionarios() {
+  const [funcionarios, setFuncionarios] =
+    useState<Funcionario[]>(listFuncionarios);
+
+  const [ordenarPor, setOrdenarPor] = useState<
+    "nome" | "nascimento" | "salario" | "funcao"
+  >("nome");
+  const [ordenacao, setOrdenacao] = useState<"asc" | "desc">("asc");
+
+  const toggleOrdenacao = (coluna: typeof ordenarPor) => {
+    if (ordenarPor === coluna) {
+      setOrdenacao((p) => (p === "asc" ? "desc" : "asc"));
+    } else {
+      setOrdenarPor(coluna);
+      setOrdenacao("asc");
+    }
+  };
+
+  const parseISOToDate = (iso: string) => {
+    const [y, m, d] = iso.split("-").map(Number);
+    return new Date(y, (m || 1) - 1, d || 1);
+  };
+
+  const formatarData = (iso: string) => {
+    const d = parseISOToDate(iso);
+    return d.toLocaleDateString("pt-BR");
+  };
+
+  const formatarDinheiro = (v: number) =>
+    new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(v);
+
+  const funcionariosOrdenados = useMemo(() => {
+    return [...funcionarios].sort((a, b) => {
+      let compare = 0;
+
+      if (ordenarPor === "nome") {
+        compare = a.nome.localeCompare(b.nome);
+      } else if (ordenarPor === "funcao") {
+        compare = a.funcao.localeCompare(b.funcao);
+      } else if (ordenarPor === "nascimento") {
+        compare =
+          parseISOToDate(a.nascimento).getTime() -
+          parseISOToDate(b.nascimento).getTime();
+      } else if (ordenarPor === "salario") {
+        compare = a.salario - b.salario;
+      }
+
+      return ordenacao === "asc" ? compare : -compare;
+    });
+  }, [funcionarios, ordenarPor, ordenacao]);
+
+  const removerUsuario = (id: number) =>
+    setFuncionarios((prev) => prev.filter((f) => f.id !== id));
+
+  const aumentarSalario = () =>
+    setFuncionarios((prev) =>
+      prev.map((f) => ({ ...f, salario: Number((f.salario * 1.1).toFixed(2)) }))
+    );
+
+  const aumentarSalarioDeUm = (id: number) =>
+    setFuncionarios((prev) =>
+      prev.map((f) =>
+        f.id === id
+          ? { ...f, salario: Number((f.salario * 1.1).toFixed(2)) }
+          : f
+      )
+    );
+
+  const agrupadoPorFuncao = useMemo(() => {
+    return funcionarios.reduce<Record<string, Funcionario[]>>((acc, f) => {
+      if (!acc[f.funcao]) acc[f.funcao] = [];
+      acc[f.funcao].push(f);
+      return acc;
+    }, {});
+  }, [funcionarios]);
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold">Funcionários</h2>
+        <Button onClick={aumentarSalario}>Aumento Geral 10%</Button>
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead
+              onClick={() => toggleOrdenacao("nome")}
+              className="cursor-pointer"
+            >
+              <div className="flex items-center gap-1">
+                Nome
+                {ordenarPor === "nome" &&
+                  (ordenacao === "asc" ? (
+                    <ArrowUp size={14} />
+                  ) : (
+                    <ArrowDown size={14} />
+                  ))}
+              </div>
+            </TableHead>
+
+            <TableHead
+              onClick={() => toggleOrdenacao("nascimento")}
+              className="cursor-pointer"
+            >
+              <div className="flex items-center gap-1">
+                Data Nascimento
+                {ordenarPor === "nascimento" &&
+                  (ordenacao === "asc" ? (
+                    <ArrowUp size={14} />
+                  ) : (
+                    <ArrowDown size={14} />
+                  ))}
+              </div>
+            </TableHead>
+
+            <TableHead
+              onClick={() => toggleOrdenacao("salario")}
+              className="cursor-pointer"
+            >
+              <div className="flex items-center gap-1">
+                Salário
+                {ordenarPor === "salario" &&
+                  (ordenacao === "asc" ? (
+                    <ArrowUp size={14} />
+                  ) : (
+                    <ArrowDown size={14} />
+                  ))}
+              </div>
+            </TableHead>
+
+            <TableHead
+              onClick={() => toggleOrdenacao("funcao")}
+              className="cursor-pointer text-right"
+            >
+              <div className="flex items-center justify-end gap-1">
+                Função
+                {ordenarPor === "funcao" &&
+                  (ordenacao === "asc" ? (
+                    <ArrowUp size={14} />
+                  ) : (
+                    <ArrowDown size={14} />
+                  ))}
+              </div>
+            </TableHead>
+
+            <TableHead>Ações</TableHead>
+          </TableRow>
+        </TableHeader>
+
+        <TableBody>
+          {funcionariosOrdenados.map((item) => (
+            <TableRow key={item.id}>
+              <TableCell>{item.nome}</TableCell>
+              <TableCell>{formatarData(item.nascimento)}</TableCell>
+              <TableCell>{formatarDinheiro(item.salario)}</TableCell>
+              <TableCell className="text-right">{item.funcao}</TableCell>
+              <TableCell className="flex gap-2">
+                <Button onClick={() => removerUsuario(item.id)}>
+                  <Trash2 />
+                </Button>
+                <Button onClick={() => aumentarSalarioDeUm(item.id)}>
+                  +10%
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+
+        <TableFooter>
+          <TableRow>
+            <TableCell colSpan={5} className="text-right">
+              Total:{" "}
+              <strong>
+                {formatarDinheiro(
+                  funcionarios.reduce((s, f) => s + f.salario, 0)
+                )}
+              </strong>
+            </TableCell>
+          </TableRow>
+        </TableFooter>
+      </Table>
+
+      {/* agrupamento por função */}
+      <div className="space-y-4">
+        {Object.entries(agrupadoPorFuncao).map(([funcao, lista]) => (
+          <div key={funcao} className="border p-3 rounded-lg">
+            <h3 className="font-semibold">{funcao}</h3>
+            <ul className="pl-5 list-disc">
+              {lista.map((f) => (
+                <li key={f.id}>
+                  {f.nome} — {formatarDinheiro(f.salario)} —{" "}
+                  {formatarData(f.nascimento)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

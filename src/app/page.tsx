@@ -10,7 +10,7 @@ import {
   TableCell,
   TableFooter,
 } from "@/components/ui/table";
-import { Trash2 } from "lucide-react";
+import { Github, Trash2 } from "lucide-react";
 
 type Funcionario = {
   id: number;
@@ -153,11 +153,18 @@ export default function Home() {
 
   return (
     <section className="max-w-5xl mx-auto p-4 space-y-6">
-      <h1 className="text-2xl font-bold mb-4">Lista de Funcionários</h1>
+      <div className=" flex gap-10 justify-center">
+        <h1 className="text-2xl font-bold mb-4">Lista de Funcionários</h1>
+        <Button>
+          Repositorio
+          <a href="">
+            <Github />
+          </a>
+        </Button>
+      </div>
       <div className="flex gap-2 mb-4">
         <Button onClick={aumentarSalario}>Aumento Geral 10%</Button>
       </div>
-
       <Table>
         <TableHeader>
           <TableRow>

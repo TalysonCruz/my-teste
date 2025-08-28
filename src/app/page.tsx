@@ -215,14 +215,6 @@ export default function Home() {
             </TableRow>
           ))}
         </TableBody>
-
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={5} className="text-right">
-              <Button onClick={aumentarSalario}>Aumento Geral 10%</Button>
-            </TableCell>
-          </TableRow>
-        </TableFooter>
       </Table>
 
       <div className="space-y-4 mt-6">

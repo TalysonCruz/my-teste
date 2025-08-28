@@ -153,18 +153,25 @@ export default function Home() {
 
   return (
     <section className="max-w-5xl mx-auto p-4 space-y-6">
-      <div className=" flex gap-10 justify-center">
-        <h1 className="text-2xl font-bold mb-4">Lista de Funcionários</h1>
-        <Button>
-          Repositorio
-          <a href="">
-            <Github />
+      <div className="flex items-center justify-center gap-10 mb-4">
+        <h1 className="text-2xl font-bold">Lista de Funcionários</h1>
+
+        <Button asChild>
+          <a
+            href="https://github.com/TalysonCruz/my-teste"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2"
+          >
+            Repositório <Github />
           </a>
         </Button>
       </div>
+
       <div className="flex gap-2 mb-4">
         <Button onClick={aumentarSalario}>Aumento Geral 10%</Button>
       </div>
+
       <Table>
         <TableHeader>
           <TableRow>

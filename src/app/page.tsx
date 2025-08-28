@@ -211,7 +211,6 @@ export default function Home() {
         </TableFooter>
       </Table>
 
-      {/* Agrupamento por função */}
       <div className="space-y-4 mt-6">
         {Object.entries(agrupadoPorFuncao).map(([funcao, lista]) => (
           <div key={funcao} className="border p-3 rounded-lg shadow">
